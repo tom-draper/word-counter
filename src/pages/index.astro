@@ -42,8 +42,29 @@
       }
     }
 
-    charChart.data.labels = Object.keys(charFreq);
-    charChart.data.datasets[0].data = Object.values(charFreq);
+    let sorted = [];
+    for (let char in charFreq) {
+      sorted.push([char, charFreq[char]]);
+    }
+    sorted.sort((a, b) => {
+      if (a[0] < b[0] || b[0] == 'space') {
+        return -1;
+      } else if (a[0] > b[0]) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+
+    let chars = [];
+    let freq = [];
+    for (let i = 0; i < sorted.length; i++) {
+      chars.push(sorted[i][0]);
+      freq.push(sorted[i][1]);
+    }
+
+    charChart.data.labels = chars;
+    charChart.data.datasets[0].data = freq;
     charChart.update();
   }
 
@@ -108,8 +129,8 @@
 </script>
 
 <main>
-  <div class="ml-60 mr-60">
-    <div id="countDisplay">Words: Characters:</div>
+  <div class="page-container ml-60 mr-60">
+    <div id="countDisplay" class="mt-5 mb-5">Words: Characters:</div>
     <div class="grid place-items-center">
       <textarea
         rows="20"
@@ -118,7 +139,14 @@
       ></textarea>
     </div>
   </div>
-
   <canvas id="wordChart" class="m-10"></canvas>
   <canvas id="charChart" class="m-10"></canvas>
 </main>
+
+<style>
+  @media only screen and (max-width: 1200px) {
+    .page-container {
+      margin: 0 5%;
+    }
+  }
+</style>
