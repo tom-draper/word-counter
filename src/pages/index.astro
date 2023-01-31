@@ -1,0 +1,35 @@
+---
+---
+
+<script>
+	let area = document.getElementById('textArea');
+	if (area.addEventListener) {
+		area.addEventListener('input', updateText, false);
+	} else if (area.attachEvent) {
+		area.attachEvent('onpropertychange', updateText);
+	}
+
+	function countWords(text) {
+		return text.match(/(\w+)/g).length;
+	}
+
+	function updateText(e) {
+		let text = document.getElementById('textArea').value;
+		let wordCount = countWords(text);
+		let charCount = text.length;
+
+		document.getElementById('countDisplay').innerHTML = `Words: ${wordCount} Characters: ${charCount}`
+	}
+</script>
+
+<main>
+	<h1>Welcome to <span class="text-gradient">Astro</span></h1>
+	<div id="countDisplay">Words:   Characters:   </div>
+	<textarea id="textArea"/>
+</main>
+
+<style>
+	textarea {
+		width: 100%;
+	}
+</style>
