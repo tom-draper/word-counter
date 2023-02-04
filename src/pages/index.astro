@@ -1,5 +1,6 @@
 ---
-import Chart from "@components/Chart.astro"
+import { SEO } from "astro-seo";
+import Chart from "@components/Chart.astro";
 ---
 
 <script is:inline src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -12,8 +13,41 @@ import Chart from "@components/Chart.astro"
     area.attachEvent("onpropertychange", updateText);
   }
 
+  function countRegex(text, regex) {
+    let count = 0;
+    let matches = text.match(regex);
+    if (matches != null) {
+      count = matches.length;
+    }
+    return count;
+  }
+
   function countWords(text) {
-    return text.match(/(\w+)/g).length;
+    return countRegex(text, /(\w+)/g);
+  }
+
+  function countNumbers(text) {
+    return countRegex(text, /[0-9]/g);
+  }
+
+  function countLines(text) {
+    return countRegex(text, /\n/g);
+  }
+
+  function countWhitespace(text) {
+    return countRegex(text, /\s/g);
+  }
+
+  function countVowels(text) {
+    return countRegex(text, /[aeiou]/gi);
+  }
+
+  function countAscii(text) {
+    return countRegex(text, /[ -~]/g);
+  }
+
+  function countPunctuation(text) {
+    return countRegex(text, /[.,\/#!?<>\[\]$%\^&\*;:{}=\-_`~()]/g);
   }
 
   function updateWordChart(text) {
@@ -51,7 +85,8 @@ import Chart from "@components/Chart.astro"
       sorted.push([char, obj[char]]);
     }
     sorted.sort((a, b) => {
-      if (a[0] < b[0] || b[0] == 'space') {  // Move space to last place
+      if (a[0] < b[0] || b[0] == "space") {
+        // Move space to last place
         return -1;
       } else if (a[0] > b[0]) {
         return 1;
@@ -71,7 +106,7 @@ import Chart from "@components/Chart.astro"
       b.push(list[i][1]);
     }
 
-    return [a, b]
+    return [a, b];
   }
 
   function updateCharChart(text) {
@@ -84,17 +119,53 @@ import Chart from "@components/Chart.astro"
     charChart.update();
   }
 
+  function formatProportion(count, total) {
+    return (total > 0 ? (count / total) * 100 : 0).toFixed(2);
+  }
+
   function updateText(e) {
     let text = document.getElementById("textArea").value;
     let wordCount = countWords(text);
     let charCount = text.length;
+    let lines = countLines(text);
+    let numbers = countNumbers(text);
+    let whitespace = countWhitespace(text);
+    let vowels = countVowels(text);
+    let ascii = countAscii(text);
+    let punctuation = countPunctuation(text);
 
+    document.getElementById("wordDisplay").innerHTML = `Words: ${wordCount}`;
+    document.getElementById("charDisplay").innerHTML = `Characters: ${charCount}`;
+
+    document.getElementById("linesDisplay").innerHTML = lines;
     document.getElementById(
-      "wordDisplay"
-    ).innerHTML = `Words: ${wordCount}`;
+      "linesPropDisplay"
+    ).innerHTML = `(${formatProportion(lines, charCount)}%)`;
+
+    document.getElementById("numbersDisplay").innerHTML = numbers;
     document.getElementById(
-      "charDisplay"
-    ).innerHTML = `Char: ${charCount}`;
+      "numbersPropDisplay"
+    ).innerHTML = `(${formatProportion(numbers, charCount)}%)`;
+
+    document.getElementById("whitespaceDisplay").innerHTML = whitespace;
+    document.getElementById(
+      "whitespacePropDisplay"
+    ).innerHTML = `(${formatProportion(whitespace, charCount)}%)`;
+
+    document.getElementById("vowelsDisplay").innerHTML = vowels;
+    document.getElementById(
+      "vowelsPropDisplay"
+    ).innerHTML = `(${formatProportion(vowels, charCount)}%)`;
+
+    document.getElementById("asciiDisplay").innerHTML = ascii;
+    document.getElementById(
+      "asciiPropDisplay"
+    ).innerHTML = `(${formatProportion(ascii, charCount)}%)`;
+
+    document.getElementById("punctuationDisplay").innerHTML = punctuation;
+    document.getElementById(
+      "punctuationPropDisplay"
+    ).innerHTML = `(${formatProportion(punctuation, charCount)}%)`;
 
     updateWordChart(text);
     updateCharChart(text);
@@ -145,28 +216,88 @@ import Chart from "@components/Chart.astro"
   });
 </script>
 
-<main>
-  <div class="page-container ml-60 mr-60">
-    <div class="mt-10 mb-5 ml-2">
-      <div id="wordDisplay" class="text-lg font-bold">Words: 0</div>
-      <div id="charDisplay" class="text-lg font-bold">Characters: 0</div>
-    </div>
-    <div class="grid place-items-center">
-      <textarea
-        rows="20"
-        id="textArea"
-        class="w-full pl-2 pr-2 border-solid border-2 border-sky-500 rounded"
-      ></textarea>
-    </div>
-  </div>
-  <canvas id="wordChart" class="m-10"></canvas>
-  <canvas id="charChart" class="m-10"></canvas>
-</main>
+<html lang="en">
+  <head>
+    <SEO
+      title="Word Counter"
+      description="A website for counting word and extracting properties of text."
+      extend={{
+        link: [{ rel: "icon", href: "/favicon.ico" }],
+        meta: [
+          {
+            name: "viewport",
+            content: "width=device-width, initial-scale=1.0",
+          },
+        ],
+      }}
+    />
+  </head>
+  <body>
+    <main>
+      <div class="page-container ml-60 mr-60">
+        <div class="mt-10 mb-5 ml-2">
+          <div id="wordDisplay" class="text-xl font-bold">Words: 0</div>
+          <div id="charDisplay" class="text-xl font-bold">Characters: 0</div>
+        </div>
+        <div class="grid place-items-center">
+          <textarea
+            rows="20"
+            id="textArea"
+            class="w-full pl-2 pr-2 border-solid border-2 border-slate-300 rounded"
+          ></textarea>
+        </div>
+      </div>
 
-<style>
-  @media only screen and (max-width: 1200px) {
-    .page-container {
-      margin: 0 5%;
-    }
-  }
-</style>
+      <div class="grid place-items-center mt-10 mb-10">
+        <table class="text-slate-500">
+          <tbody>
+            <tr>
+              <td class="font-semibold pr-12">Lines</td>
+              <td id="linesDisplay" class="text-right pr-2 pl-2">0</td>
+              <td id="linesPropDisplay" class="text-right pr-2 pl-2">(0%)</td>
+            </tr>
+            <tr>
+              <td class="font-semibold pr-12">Numbers</td>
+              <td id="numbersDisplay" class="text-right pr-2 pl-2">0</td>
+              <td id="numbersPropDisplay" class="text-right pr-2 pl-2"
+                >(0%)</td
+              >
+            </tr>
+            <tr>
+              <td class="font-semibold pr-12">Whitespace</td>
+              <td id="whitespaceDisplay" class="text-right pr-2 pl-2">0</td>
+              <td id="whitespacePropDisplay" class="text-right pr-2 pl-2"
+                >(0%)</td
+              >
+            </tr>
+            <tr>
+              <td class="font-semibold pr-12">Vowels</td>
+              <td id="vowelsDisplay" class="text-right pr-2 pl-2">0</td>
+              <td id="vowelsPropDisplay" class="text-right pr-2 pl-2">(0%)</td>
+            </tr>
+            <tr>
+              <td class="font-semibold pr-12">ASCII</td>
+              <td id="asciiDisplay" class="text-right pr-2 pl-2">0</td>
+              <td id="asciiPropDisplay" class="text-right pr-2 pl-2">(0%)</td>
+            </tr>
+            <tr>
+              <td class="font-semibold pr-12">Punctuation</td>
+              <td id="punctuationDisplay" class="text-right pr-2 pl-2">0</td>
+              <td id="punctuationPropDisplay" class="text-right pr-2 pl-2">(0%)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <canvas id="wordChart" class="m-10"></canvas>
+      <canvas id="charChart" class="m-10"></canvas>
+    </main>
+    <style>
+      @media only screen and (max-width: 1200px) {
+        .page-container {
+          margin: 0 5%;
+        }
+      }
+    </style>
+  </body>
+</html>
